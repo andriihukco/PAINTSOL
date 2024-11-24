@@ -1,8 +1,17 @@
 <!-- src/components/TopBar.vue -->
 <template>
     <div class="top-bar">
-      <!-- Left Section: Mode Switch Buttons -->
+      <!-- Left Section: Color Picker and Mode Switch Buttons -->
       <div class="left-section">
+        <!-- Color Picker -->
+        <button class="color-picker-button" @click="openColorPickerModal">
+          <div
+            class="color-display"
+            :style="{ backgroundColor: localSelectedColor }"
+          ></div>
+        </button>
+  
+        <!-- Mode Switch Buttons -->
         <button
           class="mode-button"
           :class="{ active: localCurrentMode === 'paint' }"
@@ -24,27 +33,27 @@
         <img src="@/assets/logo.png" alt="Logo" class="logo" />
       </div>
   
-      <!-- Right Section: Color Picker and Wallet Connector -->
+      <!-- Right Section: Wallet Connector -->
       <div class="right-section">
-        <div class="color-picker-container">
-          <button class="color-picker-button" @click="toggleColorPicker">
-            <div
-              class="color-display"
-              :style="{ backgroundColor: localSelectedColor }"
-            ></div>
-          </button>
-          <input
-            v-show="showColorPicker"
-            type="color"
-            v-model="localSelectedColor"
-            @input="onColorChange"
-            @blur="hideColorPicker"
-          />
-        </div>
         <WalletConnector
           @wallet-connected="onWalletConnected"
           @wallet-disconnected="onWalletDisconnected"
         />
+      </div>
+  
+      <!-- Color Picker Modal -->
+      <div v-if="showColorPickerModal" class="modal-overlay" @click.self="closeColorPickerModal">
+        <div class="modal-content">
+          <h3>Select a Color</h3>
+          <input
+            type="color"
+            v-model="localSelectedColor"
+          />
+          <div class="modal-buttons">
+            <button @click="confirmColor">Confirm</button>
+            <button @click="closeColorPickerModal">Cancel</button>
+          </div>
+        </div>
       </div>
     </div>
   </template>
@@ -70,9 +79,9 @@
     },
     data() {
       return {
-        showColorPicker: false,
         localSelectedColor: this.selectedColor,
         localCurrentMode: this.currentMode,
+        showColorPickerModal: false,
       };
     },
     watch: {
@@ -84,14 +93,18 @@
       },
     },
     methods: {
-      toggleColorPicker() {
-        this.showColorPicker = !this.showColorPicker;
+      openColorPickerModal() {
+        this.showColorPickerModal = true;
       },
-      hideColorPicker() {
-        this.showColorPicker = false;
+      closeColorPickerModal() {
+        // Reset the local color to the current selected color
+        this.localSelectedColor = this.selectedColor;
+        this.showColorPickerModal = false;
       },
-      onColorChange() {
+      confirmColor() {
+        // Emit the color change to the parent component
         this.$emit('color-changed', this.localSelectedColor);
+        this.showColorPickerModal = false;
       },
       onWalletConnected(address) {
         this.$emit('wallet-connected', address);
@@ -166,38 +179,52 @@
     color: #ffffff;
   }
   
-  .logo {
-    height: 48px; /* Adjust logo height as needed */
-    width: auto;
-  }
-  
-  .color-picker-container {
-    position: relative;
-    margin-right: 16px;
-  }
-  
   .color-picker-button {
     background: none;
     border: none;
     cursor: pointer;
     padding: 0;
+    margin-right: 12px;
   }
   
   .color-display {
-    width: 32px; /* Increase size */
+    width: 32px; /* Adjust size */
     height: 32px;
     border: 2px solid #000;
   }
   
-  input[type='color'] {
-    position: absolute;
-    top: 36px;
+  .logo {
+    height: 48px; /* Adjust logo height as needed */
+    width: auto;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
     left: 0;
-    border: none;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    background: none;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .modal-buttons {
+    margin-top: 16px;
+  }
+  
+  .modal-buttons button {
+    margin: 0 8px;
+    padding: 8px 16px;
     cursor: pointer;
   }
   

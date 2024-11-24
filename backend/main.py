@@ -187,4 +187,3 @@ def verify_signature(wallet_address: str, signature: str, message: str) -> bool:
     except Exception as e:
         print(f"Signature verification error: {e}")
         return False
-
