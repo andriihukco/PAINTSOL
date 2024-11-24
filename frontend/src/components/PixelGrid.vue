@@ -34,6 +34,10 @@
         type: String,
         default: null,
       },
+      currentMode: {
+        type: String,
+        default: 'paint',
+      },
     },
     data() {
       return {
@@ -117,9 +121,15 @@
   
         // Calculate visible bounds
         const startX = Math.max(0, Math.floor(-this.offsetX / (this.scale * cellSize)));
-        const endX = Math.min(gridSize, Math.ceil((width - this.offsetX) / (this.scale * cellSize)));
+        const endX = Math.min(
+          gridSize,
+          Math.ceil((width - this.offsetX) / (this.scale * cellSize))
+        );
         const startY = Math.max(0, Math.floor(-this.offsetY / (this.scale * cellSize)));
-        const endY = Math.min(gridSize, Math.ceil((height - this.offsetY) / (this.scale * cellSize)));
+        const endY = Math.min(
+          gridSize,
+          Math.ceil((height - this.offsetY) / (this.scale * cellSize))
+        );
   
         // Draw colored cells
         for (let x = startX; x < endX; x++) {
@@ -135,7 +145,11 @@
         }
   
         // Highlight the hovered cell
-        if (this.hoveredCellX !== null && this.hoveredCellY !== null) {
+        if (
+          this.hoveredCellX !== null &&
+          this.hoveredCellY !== null &&
+          this.currentMode === 'paint'
+        ) {
           ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Semi-transparent overlay
           ctx.fillRect(
             this.hoveredCellX * cellSize,
@@ -172,7 +186,7 @@
         this.adjustCanvasSize();
       },
       onMouseDown(event) {
-        if (event.button === 0) {
+        if (this.currentMode === 'paint' && event.button === 0) {
           // Left-click: color a cell
           const { cellX, cellY } = this.getCellCoordinates(event);
   
@@ -182,7 +196,11 @@
   
           // Send the color change to the backend
           this.updatePixelOnServer(cellX, cellY, this.selectedColor);
-        } else if (event.button === 1 || event.button === 2) {
+        } else if (
+          this.currentMode === 'grab' &&
+          (event.button === 0 || event.button === 1 || event.button === 2)
+        ) {
+          // Start panning
           this.isPanning = true;
           this.startX = event.clientX - this.offsetX;
           this.startY = event.clientY - this.offsetY;
@@ -193,7 +211,7 @@
           this.offsetX = event.clientX - this.startX;
           this.offsetY = event.clientY - this.startY;
           this.requestRedraw();
-        } else {
+        } else if (this.currentMode === 'paint') {
           const { cellX, cellY } = this.getCellCoordinates(event);
   
           if (cellX !== this.hoveredCellX || cellY !== this.hoveredCellY) {
@@ -203,8 +221,8 @@
           }
         }
       },
-      onMouseUp(event) {
-        if (event.button === 1 || event.button === 2) {
+      onMouseUp() {
+        if (this.isPanning) {
           this.isPanning = false;
         }
       },
@@ -322,5 +340,13 @@
   
   canvas:active {
     cursor: grabbing;
+  }
+  
+  canvas.grabbing {
+    cursor: grabbing !important;
+  }
+  
+  canvas.painting {
+    cursor: crosshair !important;
   }
   </style>

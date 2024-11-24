@@ -3,7 +3,9 @@
   <div id="app">
     <TopBar
       :selectedColor="selectedColor"
+      :currentMode="currentMode"
       @color-changed="onColorChanged"
+      @mode-changed="onModeChanged"
       @wallet-connected="onWalletConnected"
       @wallet-disconnected="onWalletDisconnected"
     />
@@ -12,6 +14,7 @@
       :cellSize="10"
       :selectedColor="selectedColor"
       :walletAddress="walletAddress"
+      :currentMode="currentMode"
     />
   </div>
 </template>
@@ -30,11 +33,15 @@ export default {
     return {
       selectedColor: '#000000',
       walletAddress: null,
+      currentMode: 'paint', // 'paint' or 'grab'
     };
   },
   methods: {
     onColorChanged(newColor) {
       this.selectedColor = newColor;
+    },
+    onModeChanged(newMode) {
+      this.currentMode = newMode;
     },
     onWalletConnected(address) {
       console.log('Wallet connected:', address);

@@ -1,28 +1,51 @@
 <!-- src/components/TopBar.vue -->
 <template>
     <div class="top-bar">
-      <!-- Left side: Color Picker -->
-      <div class="color-picker-container">
-        <button class="color-picker-button" @click="toggleColorPicker">
-          <div
-            class="color-display"
-            :style="{ backgroundColor: localSelectedColor }"
-          ></div>
+      <!-- Left Section: Mode Switch Buttons -->
+      <div class="left-section">
+        <button
+          class="mode-button"
+          :class="{ active: localCurrentMode === 'paint' }"
+          @click="switchToPaintMode"
+        >
+          🎨
         </button>
-        <input
-          v-show="showColorPicker"
-          type="color"
-          v-model="localSelectedColor"
-          @input="onColorChange"
-          @blur="hideColorPicker"
-        />
+        <button
+          class="mode-button"
+          :class="{ active: localCurrentMode === 'grab' }"
+          @click="switchToGrabMode"
+        >
+          ✋
+        </button>
       </div>
   
-      <!-- Right side: Wallet Connector -->
-      <WalletConnector
-        @wallet-connected="onWalletConnected"
-        @wallet-disconnected="onWalletDisconnected"
-      />
+      <!-- Center Section: Logo -->
+      <div class="center-section">
+        <img src="@/assets/logo.png" alt="Logo" class="logo" />
+      </div>
+  
+      <!-- Right Section: Color Picker and Wallet Connector -->
+      <div class="right-section">
+        <div class="color-picker-container">
+          <button class="color-picker-button" @click="toggleColorPicker">
+            <div
+              class="color-display"
+              :style="{ backgroundColor: localSelectedColor }"
+            ></div>
+          </button>
+          <input
+            v-show="showColorPicker"
+            type="color"
+            v-model="localSelectedColor"
+            @input="onColorChange"
+            @blur="hideColorPicker"
+          />
+        </div>
+        <WalletConnector
+          @wallet-connected="onWalletConnected"
+          @wallet-disconnected="onWalletDisconnected"
+        />
+      </div>
     </div>
   </template>
   
@@ -34,22 +57,30 @@
     components: {
       WalletConnector,
     },
-    emits: ['color-changed', 'wallet-connected', 'wallet-disconnected'],
+    emits: ['color-changed', 'wallet-connected', 'wallet-disconnected', 'mode-changed'],
     props: {
       selectedColor: {
         type: String,
         default: '#000000',
+      },
+      currentMode: {
+        type: String,
+        default: 'paint',
       },
     },
     data() {
       return {
         showColorPicker: false,
         localSelectedColor: this.selectedColor,
+        localCurrentMode: this.currentMode,
       };
     },
     watch: {
       selectedColor(newColor) {
         this.localSelectedColor = newColor;
+      },
+      currentMode(newMode) {
+        this.localCurrentMode = newMode;
       },
     },
     methods: {
@@ -68,29 +99,81 @@
       onWalletDisconnected() {
         this.$emit('wallet-disconnected');
       },
+      switchToPaintMode() {
+        this.localCurrentMode = 'paint';
+        this.$emit('mode-changed', 'paint');
+      },
+      switchToGrabMode() {
+        this.localCurrentMode = 'grab';
+        this.$emit('mode-changed', 'grab');
+      },
     },
   };
   </script>
   
   <style scoped>
-  /* Your existing styles */
-  </style>
-  <style scoped>
   .top-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #ffffff;
+    background-color: #512da8; /* Purple background */
     padding: 8px 16px;
     border-bottom: 1px solid #ccc;
     position: fixed;
     top: 0;
-    width: 100%;
+    left: 0; /* Ensure no gap on the left */
+    width: 100%; /* Cover the full width */
+    height: 64px; /* Increase the height */
+    box-sizing: border-box;
     z-index: 1000;
+  }
+  
+  .left-section,
+  .center-section,
+  .right-section {
+    display: flex;
+    align-items: center;
+  }
+  
+  .left-section {
+    flex: 1;
+  }
+  
+  .center-section {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .right-section {
+    flex: 1;
+    justify-content: flex-end;
+  }
+  
+  .mode-button {
+    background: none;
+    border: none;
+    font-size: 28px; /* Increase icon size */
+    cursor: pointer;
+    margin-right: 12px;
+    color: #ffffffaa;
+  }
+  
+  .mode-button.active {
+    color: #ffffff;
+  }
+  
+  .mode-button:hover {
+    color: #ffffff;
+  }
+  
+  .logo {
+    height: 48px; /* Adjust logo height as needed */
+    width: auto;
   }
   
   .color-picker-container {
     position: relative;
+    margin-right: 16px;
   }
   
   .color-picker-button {
@@ -101,14 +184,14 @@
   }
   
   .color-display {
-    width: 24px;
-    height: 24px;
-    border: 1px solid #000;
+    width: 32px; /* Increase size */
+    height: 32px;
+    border: 2px solid #000;
   }
   
   input[type='color'] {
     position: absolute;
-    top: 28px;
+    top: 36px;
     left: 0;
     border: none;
     padding: 0;
@@ -116,5 +199,20 @@
     height: 30px;
     background: none;
     cursor: pointer;
+  }
+  
+  @media (max-width: 600px) {
+    .mode-button {
+      font-size: 24px;
+    }
+  
+    .color-display {
+      width: 28px;
+      height: 28px;
+    }
+  
+    .logo {
+      height: 40px;
+    }
   }
   </style>
