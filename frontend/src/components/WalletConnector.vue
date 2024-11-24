@@ -1,3 +1,4 @@
+<!-- src/components/WalletConnector.vue -->
 <template>
   <div class="wallet-connector">
     <div v-if="!walletAddress">
@@ -18,12 +19,13 @@ import { ref, computed } from 'vue';
 
 export default {
   name: 'WalletConnector',
-  setup() {
+  emits: ['wallet-connected', 'wallet-disconnected'],
+  setup(props, { emit }) {
     const walletAddress = ref(null);
     const tokenBalance = ref('Loading...');
     const isPhantomInstalled = ref(false);
 
-    // Truncated wallet address for display (e.g., "E8ED...23vL")
+    // Truncated wallet address for display
     const truncatedAddress = computed(() => {
       if (!walletAddress.value) return '';
       const address = walletAddress.value;
@@ -45,6 +47,7 @@ export default {
       try {
         const resp = await window.solana.connect();
         walletAddress.value = resp.publicKey.toString();
+        emit('wallet-connected', walletAddress.value);
         // Fetch token balance after connecting
         await fetchTokenBalance();
       } catch (err) {
@@ -58,6 +61,7 @@ export default {
         await window.solana.disconnect();
         walletAddress.value = null;
         tokenBalance.value = null;
+        emit('wallet-disconnected');
       } catch (err) {
         console.error('Error disconnecting from Phantom Wallet:', err);
       }
@@ -66,7 +70,6 @@ export default {
     // Fetch Token Balance from Backend
     const fetchTokenBalance = async () => {
       try {
-        // Replace with your backend URL
         const backendUrl = 'http://localhost:8000/get_token_balance/';
         const response = await fetch(backendUrl, {
           method: 'POST',
@@ -102,6 +105,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .wallet-connector {

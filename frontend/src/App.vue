@@ -1,17 +1,49 @@
+<!-- App.vue -->
 <template>
   <div id="app">
-    <WalletConnector />
-    <!-- Other components go here -->
+    <TopBar
+      :selectedColor="selectedColor"
+      @color-changed="onColorChanged"
+      @wallet-connected="onWalletConnected"
+      @wallet-disconnected="onWalletDisconnected"
+    />
+    <PixelGrid
+      :gridSize="2000"
+      :cellSize="10"
+      :selectedColor="selectedColor"
+      :walletAddress="walletAddress"
+    />
   </div>
 </template>
 
 <script>
-import WalletConnector from './components/WalletConnector.vue';
+import TopBar from './components/TopBar.vue';
+import PixelGrid from './components/PixelGrid.vue';
 
 export default {
   name: 'App',
   components: {
-    WalletConnector,
+    TopBar,
+    PixelGrid,
+  },
+  data() {
+    return {
+      selectedColor: '#000000',
+      walletAddress: null,
+    };
+  },
+  methods: {
+    onColorChanged(newColor) {
+      this.selectedColor = newColor;
+    },
+    onWalletConnected(address) {
+      console.log('Wallet connected:', address);
+      this.walletAddress = address;
+    },
+    onWalletDisconnected() {
+      console.log('Wallet disconnected');
+      this.walletAddress = null;
+    },
   },
 };
 </script>
@@ -19,8 +51,10 @@ export default {
 <style>
 #app {
   position: relative;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  /* Add padding or margins if necessary */
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding-top: 56px; /* Adjust according to the top bar height */
 }
 </style>
